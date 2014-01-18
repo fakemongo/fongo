@@ -143,21 +143,23 @@ public final class GeoUtil {
     }
     for (Object value : objects) {
       if (value instanceof BasicDBList) {
-    	List<LatLong> latLongs = getLatLongs((BasicDBList) value);
-    	if(latLongs.size() > 0) {
-    	  result.addAll(latLongs);
-    	}
+        List<LatLong> latLongs = getLatLongs((BasicDBList) value);
+        if(latLongs.size() > 0) {
+          result.addAll(latLongs);
+        }
       }
-      LatLong latLong = getLatLong(value);
-      if (latLong != null) {
-        result.add(latLong);
+      else {
+        LatLong latLong = getLatLong(value);
+        if (latLong != null) {
+          result.add(latLong);
+        }
       }
     }
     return result;
   }
   
   public static List<LatLong> getLatLongs(BasicDBList list) {
-	List<LatLong> latLongs = new ArrayList<LatLong>(list.size());
+    List<LatLong> latLongs = new ArrayList<LatLong>(list.size());
     if (list.size() == 2 && list.get(0) instanceof Number && list.get(1) instanceof Number) {
       latLongs.add(new LatLong(((Number) list.get(1)).doubleValue(), ((Number) list.get(0)).doubleValue()));
     } else { // Mongo actually supports indexing a list of objects that have lat/lng!
@@ -165,11 +167,11 @@ public final class GeoUtil {
       while(itr.hasNext()) {
         LatLong latLong = getLatLong(itr.next());
         if (latLong != null) {
-      	  latLongs.add(latLong);
+          latLongs.add(latLong);
         }
       }
     }
-	return latLongs;
+    return latLongs;
   }
 
   public static LatLong getLatLong(Object value) {
