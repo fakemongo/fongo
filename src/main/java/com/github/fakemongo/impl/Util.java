@@ -14,9 +14,12 @@ import org.bson.LazyDBList;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBObject;
+import com.mongodb.DBRef;
 import com.mongodb.FongoDBCollection;
 import com.mongodb.gridfs.GridFSFile;
+
 import org.bson.types.Binary;
 
 public final class Util {
@@ -153,6 +156,17 @@ public final class Util {
     return source;
   }
 
+  public static void makeRefsWhole(DBObject obj, DB db) {
+    for(String key : obj.keySet()) {
+  	  Object field = obj.get(key);
+      if(field instanceof DBRef) {
+        DBRef dbr = (DBRef) field;
+        DBRef whole = new DBRef(db, dbr.getRef(), dbr.getId());
+        obj.put(key, whole);
+      }
+    }
+  }
+
   public static <T extends DBObject> T clone(T source) {
     if (source == null) {
       return null;
@@ -161,6 +175,7 @@ public final class Util {
     if (source instanceof BasicDBObject) {
       @SuppressWarnings("unchecked")
       T clone = (T) ((BasicDBObject) source).copy();
+      
       return clone;
     }
 

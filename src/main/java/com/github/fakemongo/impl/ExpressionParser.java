@@ -791,7 +791,7 @@ public class ExpressionParser {
           cc1 = type1;
           cc2 = type2;
         } else {
-          throw new FongoException("Don't know how to compare " + cc1.getClass() + " and " + cc2.getClass() + " values are : " + c1 + " vs " + c2);
+          return Integer.compare(cc1.hashCode(), cc2.hashCode());
         }
       }
     }

@@ -127,6 +127,7 @@ public class FongoDBCollection extends DBCollection {
       return null;
     }
     dbo = Util.clone(dbo);
+    Util.makeRefsWhole(dbo, fongoDb);
     for (Map.Entry<String, Object> entry : Util.entrySet(dbo)) {
       Object replacementValue = replaceListAndMap(entry.getValue());
       dbo.put(entry.getKey(), replacementValue);
@@ -527,6 +528,9 @@ public class FongoDBCollection extends DBCollection {
         included = ((Number) projectionValue).intValue() > 0;
       } else if (projectionValue instanceof Boolean) {
         included = ((Boolean) projectionValue).booleanValue();
+      } else if (projectionValue instanceof String) {
+        String s = ((String) projectionValue);
+        included = (s != null && s.length() > 0);
       } else {
         final String msg = "Projection `" + projectionKey
             + "' has a value that Fongo doesn't know how to handle: " + projectionValue

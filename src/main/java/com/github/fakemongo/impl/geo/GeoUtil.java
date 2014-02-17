@@ -6,9 +6,11 @@ import com.github.davidmoten.geo.GeoHash;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
 public final class GeoUtil {
 
@@ -140,22 +142,41 @@ public final class GeoUtil {
       objects = expressionParser.getEmbeddedValues(path, object);
     }
     for (Object value : objects) {
-      LatLong latLong = getLatLong(value);
-      if (latLong != null) {
-        result.add(latLong);
+      if (value instanceof BasicDBList) {
+        List<LatLong> latLongs = getLatLongs((BasicDBList) value);
+        if(latLongs.size() > 0) {
+          result.addAll(latLongs);
+        }
+      }
+      else {
+        LatLong latLong = getLatLong(value);
+        if (latLong != null) {
+          result.add(latLong);
+        }
       }
     }
     return result;
   }
+  
+  public static List<LatLong> getLatLongs(BasicDBList list) {
+    List<LatLong> latLongs = new ArrayList<LatLong>(list.size());
+    if (list.size() == 2 && list.get(0) instanceof Number && list.get(1) instanceof Number) {
+      latLongs.add(new LatLong(((Number) list.get(1)).doubleValue(), ((Number) list.get(0)).doubleValue()));
+    } else { // Mongo actually supports indexing a list of objects that have lat/lng!
+      ListIterator<Object> itr = list.listIterator();
+      while(itr.hasNext()) {
+        LatLong latLong = getLatLong(itr.next());
+        if (latLong != null) {
+          latLongs.add(latLong);
+        }
+      }
+    }
+    return latLongs;
+  }
 
   public static LatLong getLatLong(Object value) {
     LatLong latLong = null;
-    if (value instanceof BasicDBList) {
-      BasicDBList list = (BasicDBList) value;
-      if (list.size() == 2) {
-        latLong = new LatLong(((Number) list.get(1)).doubleValue(), ((Number) list.get(0)).doubleValue());
-      }
-    } else if (value instanceof DBObject) {
+    if (value instanceof DBObject) {
       DBObject dbObject = (DBObject) value;
       if (dbObject.containsField("lng") && dbObject.containsField("lat")) {
         latLong = new LatLong(((Number) dbObject.get("lat")).doubleValue(), ((Number) dbObject.get("lng")).doubleValue());
