@@ -1,14 +1,18 @@
 package com.github.fakemongo.impl.index;
 
-import com.github.fakemongo.impl.ExpressionParser;
-import com.mongodb.DBObject;
-import com.mongodb.FongoDBCollection;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.fakemongo.impl.ExpressionParser;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.FongoDBCollection;
 
 /**
  * An index for the MongoDB.
@@ -30,8 +34,73 @@ public class Index extends IndexAbstract<DBObject> {
     }
   }
 
+  @Override
   public DBObject embedded(DBObject object) {
-    return object; // Important : do not clone, indexes share objects between them.
+		return expandObject(object); // Important : do not clone, indexes share objects between them.
   }
 
+	/**
+	 * Expand all flattened {@link DBObject}s to match the current MongoDB behaviour.
+	 * 
+	 * @param object
+	 *            The {@link DBObject} to insert.
+	 * @return The expanded {@link DBObject}.
+	 */
+	private DBObject expandObject(final DBObject object)
+	{
+		final List<String> keysToRemove = new ArrayList<String>();
+		final List<DBObject> objectsToPut = new ArrayList<DBObject>();
+
+		for (final String key : object.keySet())
+		{
+			if (key.contains("."))
+			{
+				final Object actualValue = object.get(key);
+
+				DBObject expandedObject = null;
+				final String[] splittedKeys = key.split("\\.");
+
+				for (int i = splittedKeys.length - 1; i >= 0; i--)
+				{
+					if (expandedObject == null)
+					{
+						expandedObject = new BasicDBObject(splittedKeys[i], actualValue);
+					}
+					else
+					{
+						final DBObject partialObject = expandedObject;
+						if(partialObject.containsField(splittedKeys[i]))
+						{
+							final DBObject existingFieldObject = (DBObject) partialObject.get(splittedKeys[i]);
+						}
+						expandedObject = new BasicDBObject(splittedKeys[i], partialObject);
+					}
+				}
+
+				keysToRemove.add(key);
+				objectsToPut.add(expandedObject);
+			}
+		}
+
+		for (final String keyToRemove : keysToRemove)
+		{
+			object.removeField(keyToRemove);
+		}
+
+		for (final DBObject objectToPut : objectsToPut)
+		{
+			final String rootElement = objectToPut.keySet().iterator().next();
+			if (object.containsField(rootElement))
+			{
+				DBObject objectToAdd = (DBObject) objectToPut.get(rootElement);
+				((DBObject) object.get(rootElement)).putAll(objectToAdd);
+			}
+			else
+			{
+				object.putAll(objectToPut);
+			}
+		}
+
+		return object;
+	}
 }
