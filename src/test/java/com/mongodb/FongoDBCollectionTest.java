@@ -29,6 +29,34 @@ public class FongoDBCollectionTest {
 
     assertEquals("applied", expected, actual);
   }
+	
+  @Test
+  public void applyElemMatchProjectionsInclusionsOnly() {
+    BasicDBList dbl = new BasicDBList();
+    dbl.add(new BasicDBObject("a","a"));
+    dbl.add(new BasicDBObject("b","b"));
+    BasicDBObject obj = new BasicDBObject().append("_id", "_id").append("list", dbl);
+    DBObject actual = collection.applyProjections(obj, 
+        new BasicDBObject().append("list", new BasicDBObject("$elemMatch", new BasicDBObject("b", "b"))));
+    BasicDBList expextedDbl = new BasicDBList();
+    expextedDbl.add(new BasicDBObject("b","b"));
+    DBObject expected = new BasicDBObject().append("_id", "_id").append("list", expextedDbl);
+    assertEquals("applied", expected, actual);
+  }
+	
+  @Test
+  public void applyElemMatchProjectionsMultiFieldInclusionsOnly() {
+    BasicDBList dbl = new BasicDBList();
+    dbl.add(new BasicDBObject("a","a").append("b", "b"));
+    dbl.add(new BasicDBObject("c","c").append("d", "d"));
+    BasicDBObject obj = new BasicDBObject().append("_id", "_id").append("list", dbl);
+    DBObject actual = collection.applyProjections(obj, 
+        new BasicDBObject().append("list", new BasicDBObject("$elemMatch", new BasicDBObject("d", "d"))));
+    BasicDBList expextedDbl = new BasicDBList();
+    expextedDbl.add(new BasicDBObject("c","c").append("d", "d"));
+    DBObject expected = new BasicDBObject().append("_id", "_id").append("list", expextedDbl);
+    assertEquals("applied", expected, actual);
+  }
 
   /** Tests multiprojections that are nested with the same prefix: a.b.c and a.b.d */
   @Test
