@@ -116,6 +116,7 @@ public class FongoDBCursor extends DBCursor {
 
   @Override
   public int length() {
+    fetch();
     return this.objects.size();
   }
 

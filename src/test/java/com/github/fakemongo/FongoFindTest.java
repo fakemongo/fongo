@@ -102,4 +102,12 @@ public class FongoFindTest {
         new BasicDBObject("lang", new BasicDBObject("$in", new HashSet<String>(newArrayList("de")))))
     ).isNotNull();
   }
+
+  @Test
+  public void testCursorLength() {
+    DBCollection collection = fongoRule.newCollection();
+    collection.insert(new BasicDBObject("_id", 1).append("lang", "de"));
+    assertThat(collection.find().length())
+            .isEqualTo(1);
+  }
 }
