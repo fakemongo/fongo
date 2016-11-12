@@ -1,26 +1,12 @@
 package com.mongodb;
 
-import com.github.fakemongo.FongoException;
-import com.github.fakemongo.impl.Aggregator;
-import com.github.fakemongo.impl.ExpressionParser;
-import com.github.fakemongo.impl.Filter;
-import com.github.fakemongo.impl.MapReduce;
-import com.github.fakemongo.impl.Tuple2;
-import com.github.fakemongo.impl.UpdateEngine;
-import com.github.fakemongo.impl.Util;
-import com.github.fakemongo.impl.geo.GeoUtil;
-import com.github.fakemongo.impl.index.GeoIndex;
-import com.github.fakemongo.impl.index.IndexAbstract;
-import com.github.fakemongo.impl.index.IndexFactory;
-import com.github.fakemongo.impl.text.TextSearch;
 import static com.mongodb.assertions.Assertions.isTrueArgument;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import static java.util.Collections.emptyList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -29,6 +15,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.bson.BSON;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
@@ -46,6 +33,23 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.fakemongo.FongoException;
+import com.github.fakemongo.impl.Aggregator;
+import com.github.fakemongo.impl.ExpressionParser;
+import com.github.fakemongo.impl.Filter;
+import com.github.fakemongo.impl.MapReduce;
+import com.github.fakemongo.impl.Tuple2;
+import com.github.fakemongo.impl.UpdateEngine;
+import com.github.fakemongo.impl.Util;
+import com.github.fakemongo.impl.geo.GeoUtil;
+import com.github.fakemongo.impl.index.GeoIndex;
+import com.github.fakemongo.impl.index.IndexAbstract;
+import com.github.fakemongo.impl.index.IndexFactory;
+import com.github.fakemongo.impl.text.TextSearch;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -68,6 +72,8 @@ public class FongoDBCollection extends DBCollection {
   // Fields/Index
   private final List<IndexAbstract> indexes = new ArrayList<IndexAbstract>();
   private final IndexAbstract _idIndex;
+  
+  private final String SYSTEM_ELEMENT = "system.";
 
   public FongoDBCollection(FongoDB db, String name) {
     this(db, name, false);
@@ -76,7 +82,7 @@ public class FongoDBCollection extends DBCollection {
   public FongoDBCollection(FongoDB db, String name, boolean idIsNotUniq) {
     super(db, name);
     this.fongoDb = db;
-    this.nonIdCollection = name.startsWith("system");
+    this.nonIdCollection = name.startsWith(SYSTEM_ELEMENT);
     this.expressionParser = new ExpressionParser();
     this.updateEngine = new UpdateEngine();
     this.objectComparator = expressionParser.buildObjectComparator(true);
