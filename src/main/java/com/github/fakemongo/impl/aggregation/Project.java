@@ -1,17 +1,8 @@
 package com.github.fakemongo.impl.aggregation;
 
-import com.github.fakemongo.impl.ExpressionParser;
-import com.github.fakemongo.impl.Util;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.FongoDB;
-import com.mongodb.FongoDBCollection;
-import com.mongodb.MongoException;
-import com.mongodb.annotations.ThreadSafe;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -20,8 +11,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.fakemongo.impl.ExpressionParser;
+import com.github.fakemongo.impl.Util;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.FongoDB;
+import com.mongodb.FongoDBCollection;
+import com.mongodb.MongoException;
+import com.mongodb.annotations.ThreadSafe;
 
 /**
  * TODO : { project : { _id : 0} } must remove the _id field. If a $sort exist after...
@@ -59,6 +64,9 @@ public class Project extends PipelineKeyword {
       projectedAbstractMap.put(ProjectedDateMinute.KEYWORD, ProjectedDateMinute.class);
       projectedAbstractMap.put(ProjectedDateSecond.KEYWORD, ProjectedDateSecond.class);
       projectedAbstractMap.put(ProjectedDateMillisecond.KEYWORD, ProjectedDateMillisecond.class);
+      
+      projectedAbstractMap.put(ProjectedFilter.KEYWORD, ProjectedFilter.class);
+      
     }
 
     final String keyword;
@@ -738,5 +746,174 @@ public class Project extends PipelineKeyword {
   public String getKeyword() {
     return "$project";
   }
+  
+  
+  
+  public static class ProjectedFilter extends ProjectedAbstract<ProjectedFilter> {
+	    public static final String KEYWORD = "$filter";
+	    
+	    private static final String INPUT = "input";
+	    private static final String COND = "cond";
+	    private static final String ITEMS = "items";
+	    private static final String AS = "as";
+
+	    public ProjectedFilter(String destName, DBCollection coll, DBObject object) {
+	      this(KEYWORD, destName, coll, object);
+	    }
+
+	    ProjectedFilter(String keyword, String destName, DBCollection coll, DBObject pipeline) {
+	      super(KEYWORD, destName, pipeline);
+	    }
+
+		@Override
+		public void unapply(DBObject result, DBObject object, String key) {
+			
+			Object items = result.get(ITEMS);
+			if(items == null && key == null){
+				result.put(ITEMS, null);
+				return;
+			}
+			
+			BasicDBObject basicDBObject = (BasicDBObject)object;
+			BasicDBList elementToAdd = (BasicDBList) basicDBObject.get(key);
+			if(elementToAdd == null)
+				return;
+			
+			result.put(ITEMS, elementToAdd);
+		}
+		
+		
+		@Override
+		void doWork(DBCollection coll, DBObject projectResult, Map<String, List<ProjectedAbstract>> projectedFields, String items_key, Object pipeline, String namespace) {
+			BasicDBObject pipelineOasicDBObject = (BasicDBObject)pipeline;
+			
+			String input = getInput(pipelineOasicDBObject);			
+			
+			BasicDBObject queryToDelete =  new BasicDBObject("$pull", new BasicDBObject(input ,projectQuery(new ArrayList<BasicDBObject>(), new BasicDBObject(), getAs(pipelineOasicDBObject), getCond(pipelineOasicDBObject))));
+			
+			DBCollection tmpCollection = getClonedCollection(coll);
+			
+			tmpCollection.updateMulti(new BasicDBObject(), queryToDelete);
+					
+			subtraction(input, tmpCollection, coll);
+			
+			createMapping(coll, projectResult, projectedFields, INPUT, input, namespace, this);
+		}
+		
+		
+		/**
+		 * This method creates a new DBCollection with the elements of the DBCollection passed like parameter
+		 * 
+		 * @param coll
+		 * @return a copy of the DBCollection
+		 */
+		private DBCollection getClonedCollection(DBCollection coll){
+			
+			DBCollection tmpCollection = new FongoDBCollection((FongoDB) coll.getDB(), "tmp");
+			DBCursor cursor = coll.find();
+			
+			while(cursor.hasNext())
+				tmpCollection.insert(cursor.next());
+			
+			return tmpCollection;
+		}
+		
+		private String getInput(BasicDBObject pipelineOasicDBObject){
+			String input = pipelineOasicDBObject.getString(INPUT);
+			return (input.startsWith("$")) ? input.substring(1, input.length()) 
+										   : input;
+		}
+		
+		private String getAs(BasicDBObject pipelineOasicDBObject){
+			return pipelineOasicDBObject.getString(AS);
+		}
+		
+		private BasicDBObject getCond(BasicDBObject pipelineOasicDBObject){
+			return (BasicDBObject) pipelineOasicDBObject.get(COND);
+		}
+		
+		
+		private boolean isLeaf(Object element){
+			return !(element instanceof BasicDBObject);
+		}
+		
+		
+		/**
+		 * This method creates a query to pass at a collection. This query will remove the element which DOESN'T match with the piupeline condition
+		 * @param as
+		 * @param cond
+		 * @return   
+		 */
+		private BasicDBObject projectQuery(List<BasicDBObject> leaves, BasicDBObject result, String as, BasicDBObject cond){
+			
+			if(cond.isEmpty())
+				return new BasicDBObject();
+		
+			for(String function : cond.keySet()){
+				
+				BasicDBList functionParameters = (BasicDBList) cond.get(function);
+				
+				if(functionParameters instanceof List){
+
+					for(Object ele :functionParameters){
+						
+						if(isLeaf(ele))
+							return getLeafBasicDBObject(ele, as, functionParameters, function);
+						else{
+							BasicDBObject leaf = projectQuery(leaves, result, as, (BasicDBObject) ele);
+							leaves.addAll(Arrays.asList(leaf));
+							result.append(function, leaves);
+						}
+						
+					}
+				}
+			}
+			return result;
+			
+		}  
+		
+		private BasicDBObject getLeafBasicDBObject(Object ele, String as, BasicDBList functionParameters, String function){
+			
+			if(!(ele instanceof String))
+				return new BasicDBObject();
+			
+			String[] functionValue = ((String)ele).split("\\.");
+			
+			String alias = functionValue[0];
+			
+			if(!alias.replaceAll("\\$", "").equals(as))
+				throw new IllegalArgumentException("Use of undefined variable: " + alias.replaceAll("\\$", ""));
+			
+			String valueToApplay = functionValue[1];
+			Object value = functionParameters.get(1);
+			BasicDBObject condition =  new BasicDBObject(function, value);
+			BasicDBObject result = new BasicDBObject(valueToApplay, condition);
+			return result;
+			
+			
+		}
+		
+		private void subtraction(String input, DBCollection sourceCollection, DBCollection targetCollection){
+			
+			DBCursor cursor = sourceCollection.find();
+			while(cursor.hasNext()){
+				
+				DBObject document = (DBObject) cursor.next();
+				BasicDBList arrayEmelents = (BasicDBList) document.get(input);
+				
+				if(arrayEmelents != null){
+					for(int i = 0; i<= arrayEmelents.size()-1; i++){
+						BasicDBObject arrayObjectToDelete = (BasicDBObject) arrayEmelents.get(i);
+						targetCollection.updateMulti(new BasicDBObject(), new BasicDBObject("$pull", new BasicDBObject(input, arrayObjectToDelete)));
+						
+					}
+				}
+				
+			}
+			
+		}
+
+	  }
+  
 
 }
