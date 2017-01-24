@@ -1,14 +1,13 @@
 package com.github.fakemongo.impl.aggregation;
 
 import com.github.fakemongo.Fongo;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.FongoDB;
+
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * User: william Date: 24/07/13
