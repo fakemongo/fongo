@@ -135,6 +135,10 @@ public class Group extends PipelineKeyword {
     public boolean isCanReturnNull() {
       return canReturnNull;
     }
+
+    public String getKeyword() {
+      return keyword;
+    }
   }
 
   @Override

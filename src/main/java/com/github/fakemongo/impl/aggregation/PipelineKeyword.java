@@ -8,6 +8,7 @@ import com.mongodb.DBObject;
 import com.mongodb.FongoDB;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * User: william Date: 24/07/13
@@ -56,5 +57,17 @@ public abstract class PipelineKeyword {
 
   public boolean canApply(DBObject object) {
     return object.containsField(getKeyword());
+  }
+
+  static <T> void validateNull(T param, String msg) {
+    if(param == null) {
+      fongo.errorResult(15955, msg).throwOnError();
+    }
+  }
+
+  static void validateTrue(boolean expr, String msg) {
+    if(!expr) {
+      fongo.errorResult(15955, msg).throwOnError();
+    }
   }
 }
