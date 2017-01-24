@@ -1,4 +1,4 @@
-package com.github.fakemongo;
+package com.github.fakemongo.impl.aggregation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

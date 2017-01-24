@@ -22,7 +22,7 @@ import com.mongodb.DBObject;
  */
 public class Lookup extends PipelineKeyword {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Group.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Lookup.class);
 
   public static final Lookup INSTANCE = new Lookup();
   public static final String ID = "_id";
