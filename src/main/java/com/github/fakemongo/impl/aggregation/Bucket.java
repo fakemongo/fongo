@@ -25,7 +25,6 @@ public class Bucket extends PipelineKeyword {
     LOGGER.trace(">>>> applying $bucket pipeline operation");
     DBObject lookup = ExpressionParser.toDbObject(aggQuery.get(getKeyword()));
     Collection<DBObject> parentItems = bucketize(parentColl, lookup);
-    LOGGER.trace("<<<< applying $bucket pipeline operation");
     List<DBObject> dbObjects = new ArrayList<DBObject>();
     for (DBObject object : parentItems) {
       // don't include those values that don't have any entries other than _id
@@ -36,6 +35,7 @@ public class Bucket extends PipelineKeyword {
         dbObjects.add(object);
       }
     }
+    LOGGER.trace("<<<< applying $bucket pipeline operation");
     return dropAndInsert(parentColl, dbObjects);
   }
 

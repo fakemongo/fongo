@@ -24,7 +24,8 @@ public class Aggregator {
   private static final List<PipelineKeyword> keywords = Arrays.asList(Match.INSTANCE, Project.INSTANCE, Group.INSTANCE,
                                                                       Sort.INSTANCE, Sample.INSTANCE, Limit.INSTANCE,
                                                                       Skip.INSTANCE, Unwind.INSTANCE, Out.INSTANCE,
-                                                                      Lookup.INSTANCE, Bucket.INSTANCE);
+                                                                      Lookup.INSTANCE, Bucket.INSTANCE,
+                                                                      ReplaceRoot.INSTANCE);
 
   public Aggregator(FongoDB fongoDB, FongoDBCollection coll, List<? extends DBObject> pipeline) {
     this.fongoDB = fongoDB;
