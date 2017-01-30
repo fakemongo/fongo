@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 
-public class ReplaceRoot  extends PipelineKeyword {
+public class ReplaceRoot extends PipelineKeyword {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplaceRoot.class);
 

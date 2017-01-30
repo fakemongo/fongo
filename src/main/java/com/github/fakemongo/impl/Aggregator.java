@@ -25,7 +25,7 @@ public class Aggregator {
                                                                       Sort.INSTANCE, Sample.INSTANCE, Limit.INSTANCE,
                                                                       Skip.INSTANCE, Unwind.INSTANCE, Out.INSTANCE,
                                                                       Lookup.INSTANCE, Bucket.INSTANCE,
-                                                                      ReplaceRoot.INSTANCE);
+                                                                      ReplaceRoot.INSTANCE, AddFields.INSTANCE);
 
   public Aggregator(FongoDB fongoDB, FongoDBCollection coll, List<? extends DBObject> pipeline) {
     this.fongoDB = fongoDB;
