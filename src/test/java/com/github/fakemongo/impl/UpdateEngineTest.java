@@ -413,7 +413,7 @@ public class UpdateEngineTest {
   }
 
   @Test
-  public void testPositionalOperatorWithElemMatch() {
+  public void testPositionalOperatorWithElemMatchWithPostPath() {
     String random1 = UUID.randomUUID().toString();
     String random2 = UUID.randomUUID().toString();
 
@@ -433,7 +433,7 @@ public class UpdateEngineTest {
   }
 
   @Test
-  public void testPositionalOperatorWithElemMatch2() {
+  public void testPositionalOperatorWithElemMatchWithoutPostPath() {
     String random1 = UUID.randomUUID().toString();
     String random2 = UUID.randomUUID().toString();
 
