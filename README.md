@@ -81,7 +81,7 @@ It also has a "provided" dependency on sl4j-api for logging. If you don't alread
 </dependency>
 ```
 
-Fongo should be thread safe. All read and write operations on collections are synchronized. It's pretty course, but
+Fongo should be thread safe. All read and write operations on collections are synchronized. It's pretty coarse, but
 should be good enough for simple testing. Fongo doesn't have any shared state (no statics). Each fongo instance is completely independent.
 
 ## Usage Details
