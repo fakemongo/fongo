@@ -136,7 +136,11 @@ public class UpdateEngine {
         } else {
           //this is kind of a waste
           DBObject o = ExpressionParser.isDbObject(listItem) ? ExpressionParser.toDbObject(listItem) : new BasicDBObject(prePath, listItem);
-          if (filter.apply(o)) {
+          BasicDBList listWithSingleItem = new BasicDBList();
+          listWithSingleItem.add(listItem);
+          if (filter.apply(o) ||
+              //Case of a nested $elemMatch
+              filter.apply(new BasicDBObject(prePath, listWithSingleItem))) {
             BasicDBList newList = new BasicDBList();
             newList.addAll(valueList);
             //do not put any data on ownerObj, because the prePath can be composed of different parts

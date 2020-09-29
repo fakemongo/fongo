@@ -413,10 +413,10 @@ public class UpdateEngineTest {
   }
 
   @Test
-  public void testPositionalOperatorWithElemMatch() {
+  public void testPositionalOperatorWithElemMatchWithPostPath() {
     String random1 = UUID.randomUUID().toString();
     String random2 = UUID.randomUUID().toString();
-    
+
     DBObject object = (DBObject) FongoJSON.parse("{ \"name\" : \"Tenant 1\", \"appAllocations\" : [ { \"appId\" : \""
         + random1 + "\" , \"maxUser\" : 4} , { \"appId\""
         + ": \"" + random2 + "\" , \"maxUser\" : 42}]}");
@@ -431,12 +431,32 @@ public class UpdateEngineTest {
     assertEquals(expected.toString(),
         updateEngine.doUpdate(object, update, query, false).toString());
   }
-  
+
+  @Test
+  public void testPositionalOperatorWithElemMatchWithoutPostPath() {
+    String random1 = UUID.randomUUID().toString();
+    String random2 = UUID.randomUUID().toString();
+
+    DBObject object = (DBObject) FongoJSON.parse("{ \"name\" : \"Tenant 1\", \"appAllocations\" : [ { \"appId\" : \""
+        + random1 + "\" , \"maxUser\" : 4} , { \"appId\""
+        + ": \"" + random2 + "\" , \"maxUser\" : 42}]}");
+    DBObject query = (DBObject) FongoJSON.parse("{ \"appAllocations\" : { \"$elemMatch\" : { \"appId\" : \"" + random1 + "\"}}}");
+    DBObject update = (DBObject) FongoJSON.parse("{ \"$set\" : { \"appAllocations.$\" : { \"appId\" : \"" + random1 + "\", \"maxUser\" : 9 }}}");
+
+    DBObject expected = (DBObject) FongoJSON.parse("{ \"name\" : \"Tenant 1\", \"appAllocations\" : [ { \"appId\" : \""
+        + random1 + "\" , \"maxUser\" : 9} , { \"appId\""
+        + ": \"" + random2 + "\" , \"maxUser\" : 42}]}");
+    UpdateEngine updateEngine = new UpdateEngine();
+
+    assertEquals(expected.toString(),
+        updateEngine.doUpdate(object, update, query, false).toString());
+  }
+
   @Test
   public void testAddOrReplaceElementMustWorkWithDollarOperator() {
     String random1 = UUID.randomUUID().toString();
     String random2 = UUID.randomUUID().toString();
-    
+
     DBObject object = (DBObject) FongoJSON.parse("{ \"_id\" : \"1234\" , \"var1\" : \"val1\" , \"parentObject\" : { \"var2\" : \"val21\" , \"subObject\" : [ { \"_id\" : \"" + random1 + "\" , \"var3\" : \"val31\"}, { \"_id\" : \"" + random2 + "\" , \"var3\" : \"val32\"}]}}");
     DBObject update = (DBObject) FongoJSON.parse("{ \"$set\" : { \"parentObject.subObject.$\" : { \"_id\" : \"" + random1 + "\" , \"var3\" : \"val33\"}}}");
     DBObject query = (DBObject) FongoJSON.parse("{ \"_id\" : \"1234\" , \"parentObject.subObject._id\" : \"" + random1 + "\"}");
