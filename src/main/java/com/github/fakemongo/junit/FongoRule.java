@@ -63,6 +63,7 @@ public class FongoRule extends ExternalResource {
    * @param serverVersion     version of the server to use for fongo.
    * @param realMongo         set to true if you want to use a real mongoDB.
    * @param mongoClientIfReal real client to use if realMongo si true.
+   * @param codecRegistry     the codec registry used by fongo.
    */
   public FongoRule(final String dbName, final ServerVersion serverVersion, final boolean realMongo, final MongoClient mongoClientIfReal, final CodecRegistry codecRegistry) {
     this.dbName = dbName;

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/fakemongo/fongo.svg?branch=master)](https://travis-ci.org/fakemongo/fongo)
+[![Build Status](https://github.com/fakemongo/fongo/workflows/ci/badge.svg)](https://github.com/fakemongo/fongo/actions?query=workflow%3Aci)
 
 # fongo
 
