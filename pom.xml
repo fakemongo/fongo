@@ -45,8 +45,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.11.6</scala.version>
+        <scala.version>2.11.12</scala.version>
         <version.surefire>2.18.1</version.surefire>
+        <java.version>1.7</java.version>
 
         <!-- Jacoco -->
         <jacoco.destFile.unit>${project.build.directory}/jacoco-unit.exec</jacoco.destFile.unit>
@@ -103,6 +104,11 @@
             <groupId>de.grundid.opendatalab</groupId>
             <artifactId>geojson-jackson</artifactId>
             <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
         </dependency>
 
         <!-- Scope Test -->
@@ -213,8 +219,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
                     <testExcludes>
                         <exclude>com/github/fakemongo/PerfTest.java</exclude>
@@ -236,7 +242,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>0.8.6</version>
                 <executions>
                     <execution>
                         <goals>
@@ -294,9 +300,9 @@
                 <configuration>
                     <javacArgs>
                         <javacArg>-source</javacArg>
-                        <javacArg>1.6</javacArg>
+                        <javacArg>${java.version}</javacArg>
                         <javacArg>-target</javacArg>
-                        <javacArg>1.6</javacArg>
+                        <javacArg>${java.version}</javacArg>
                     </javacArgs>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>
@@ -304,10 +310,11 @@
                         <!--jvmArg>-Dscala.timings=true</jvmArg -->
                     </jvmArgs>
                     <args>
-                        <arg>-target:jvm-1.6</arg>
+                        <arg>-target:jvm-${java.version}</arg>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
                         <arg>-feature</arg>
+                        <arg>-nobootcp</arg>
                     </args>
                     <!--<recompileMode>incremental</recompileMode>-->
                     <!--<useZincServer>false</useZincServer>-->
@@ -339,6 +346,7 @@
                 <version>2.10.3</version>
                 <configuration>
                     <excludePackageNames>com.mongodb:com.github.fakemongo.impl</excludePackageNames>
+                    <source>${java.version}</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -490,8 +498,8 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.2</version>
                         <configuration>
-                            <source>1.6</source>
-                            <target>1.6</target>
+                            <source>${java.version}</source>
+                            <target>${java.version}</target>
                             <encoding>UTF-8</encoding>
                             <testIncludes>
                                 <include>com/github/fakemongo/PerfTest.java</include>
