@@ -50,6 +50,11 @@ public class SpringQueryTest {
     assertThat(repository.findLongListWithQuery(10L)).isNotNull();
     assertThat(repository.findLongListWithQuery(longList)).hasSize(1);
     assertThat(repository.findLongListWithQuery(10L)).hasSize(1);
+
+    DomainObject match = repository.findByLongList(10L).get(0);
+    assertThat(repository.findBy_id(match.get_id())).isNotNull();
+    assertThat(repository.findBy_idIgnoreCase(match.get_id())).isNotNull();
+
     ctx.close();
   }
 
@@ -147,4 +152,7 @@ interface QueryRepository extends MongoRepository<SpringQueryTest.DomainObject, 
   List<? extends SpringQueryTest.DomainObject> findByLongList(Long foo);
 
   List<? extends SpringQueryTest.DomainObject> findByLongList(List<Long> foo);
+
+  SpringQueryTest.DomainObject findBy_id(String id);
+  SpringQueryTest.DomainObject findBy_idIgnoreCase(String id);
 }
